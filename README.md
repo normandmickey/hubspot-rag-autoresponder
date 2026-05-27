@@ -175,3 +175,7 @@ Notes:
 - `LLM_*` is used for reply generation
 - `EMBED_*` is used for KB query embeddings
 - `OPENAI_API_KEY` can still act as a fallback if you leave the split keys blank
+
+
+## Test harness note
+The local ticket test prints `TEST_START` immediately when it begins running, so if you see no output at all the script likely did not execute in the expected environment.

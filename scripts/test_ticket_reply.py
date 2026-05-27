@@ -42,3 +42,8 @@ def main():
     print(f"REASONS={','.join(decision.reasons)}")
     print('--- REPLY ---')
     print(reply)
+
+
+if __name__ == '__main__':
+    print('TEST_START')
+    main()
