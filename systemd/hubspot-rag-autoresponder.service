@@ -1,0 +1,15 @@
+[Unit]
+Description=HubSpot RAG Autoresponder
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/hubspot-rag-autoresponder
+ExecStart=/opt/hubspot-rag-autoresponder/.venv/bin/python /opt/hubspot-rag-autoresponder/scripts/run_tickets.py --loop --dry-run
+Restart=always
+RestartSec=10
+User=pi
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+{
+  "ticket_id": "local-1",
+  "subject": "Cannot access my account",
+  "requester_name": "Jane Doe",
+  "requester_email": "jane@example.com",
+  "body_text": "I keep getting an error when I try to sign in. What do you need from me to troubleshoot this?"
+}
