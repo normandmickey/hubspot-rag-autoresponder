@@ -179,3 +179,12 @@ Notes:
 
 ## Test harness note
 The local ticket test prints `TEST_START` immediately when it begins running, so if you see no output at all the script likely did not execute in the expected environment.
+
+
+## Fallback behavior
+If retrieval finds no KB support, the responder now uses a strict fallback instead of inventing an answer.
+
+That fallback:
+- says it lacks enough verified KB information
+- avoids making up facts, contacts, URLs, or recommendations
+- asks for clarification or offers escalation

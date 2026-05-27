@@ -50,6 +50,7 @@ def process_ticket(instance, ticket, dry_run: bool = True):
         f"REASONS={','.join(decision.reasons)}",
         f"KB_HITS={len(hits)}",
         f"WRITEBACK_STATUS={note_result.get('status', 'unknown')}",
+        f"FALLBACK_ONLY={'fallback_only' in decision.reasons}",
         f"NOTE_ID={note_result.get('note_id', '')}",
         'REPLY_PREVIEW_START',
         reply,
