@@ -40,10 +40,11 @@ Fallback rule:
 
 
 def fallback_reply(message):
+    greeting_name = (message.requester_name or '').strip()
+    greeting = f"Hi {greeting_name}," if greeting_name else "Hi,"
     return (
-        f"Hi {message.requester_name or 'there'},\n\n"
-        "Thanks for reaching out. I do not have enough verified information in the knowledge base to answer that confidently. "
-        "If you can share a little more detail, or if you want this routed to the right person for review, I can help with that.\n\n"
+        f"{greeting}\n\n"
+        "We’re unable to answer that question based on the knowledge base.\n\n"
         "Best,\nSupport"
     )
 
