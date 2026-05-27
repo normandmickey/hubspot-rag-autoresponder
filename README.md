@@ -77,3 +77,23 @@ Dry-run still avoids touching HubSpot writeback:
 ```bash
 ./.venv/bin/python scripts/run_tickets.py --limit 3 --dry-run
 ```
+
+
+## Multi-user support
+The project now supports multiple HubSpot user/queue instances under `instances/<name>/`.
+Each instance can have its own:
+- `HUBSPOT_OWNER_ID`
+- `HUBSPOT_TICKET_PIPELINE`
+- `knowledge_base/`
+- `data/state.json`
+
+Example runs:
+```bash
+./.venv/bin/python scripts/run_tickets.py --instance user-a --dry-run
+./.venv/bin/python scripts/run_tickets.py --instance user-b --dry-run
+./.venv/bin/python scripts/run_tickets.py --all-instances --dry-run
+```
+
+Each instance writes its own log file:
+- `logs/hubspot-user-a.log`
+- `logs/hubspot-user-b.log`

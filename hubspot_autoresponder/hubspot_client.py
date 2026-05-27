@@ -10,7 +10,7 @@ def _headers():
     }
 
 
-def get_recent_tickets(limit: int = 10):
+def get_recent_tickets(limit: int = 10, pipeline: str = '', owner_id: str = ''):
     url = f"{config.HUBSPOT_BASE_URL}/crm/v3/objects/tickets"
     params = {
         'limit': limit,
@@ -18,7 +18,16 @@ def get_recent_tickets(limit: int = 10):
     }
     resp = requests.get(url, headers=_headers(), params=params, timeout=30)
     resp.raise_for_status()
-    return resp.json().get('results', [])
+    rows = resp.json().get('results', [])
+    filtered = []
+    for row in rows:
+        props = row.get('properties') or {}
+        if pipeline and props.get('hs_pipeline', '') != pipeline:
+            continue
+        if owner_id and props.get('hubspot_owner_id', '') != owner_id:
+            continue
+        filtered.append(row)
+    return filtered
 
 
 def create_note(body_text: str):

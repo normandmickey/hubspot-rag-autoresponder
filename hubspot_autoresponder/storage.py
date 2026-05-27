@@ -1,34 +1,37 @@
 import json
 from pathlib import Path
-from . import config
-
-STATE_PATH = config.DATA_PATH / 'state.json'
 
 
-def _ensure():
-    config.DATA_PATH.mkdir(parents=True, exist_ok=True)
-    if not STATE_PATH.exists():
-        STATE_PATH.write_text(json.dumps({'processed_ticket_ids': []}, indent=2))
+def state_path_for(data_path: Path):
+    return data_path / 'state.json'
 
 
-def load_state():
-    _ensure()
-    return json.loads(STATE_PATH.read_text())
+def _ensure(data_path: Path):
+    data_path.mkdir(parents=True, exist_ok=True)
+    state_path = state_path_for(data_path)
+    if not state_path.exists():
+        state_path.write_text(json.dumps({'processed_ticket_ids': []}, indent=2))
+    return state_path
 
 
-def save_state(state):
-    _ensure()
-    STATE_PATH.write_text(json.dumps(state, indent=2, sort_keys=True))
+def load_state(data_path: Path):
+    state_path = _ensure(data_path)
+    return json.loads(state_path.read_text())
 
 
-def is_processed(ticket_id: str) -> bool:
-    state = load_state()
+def save_state(data_path: Path, state):
+    state_path = _ensure(data_path)
+    state_path.write_text(json.dumps(state, indent=2, sort_keys=True))
+
+
+def is_processed(data_path: Path, ticket_id: str) -> bool:
+    state = load_state(data_path)
     return ticket_id in state.get('processed_ticket_ids', [])
 
 
-def mark_processed(ticket_id: str):
-    state = load_state()
+def mark_processed(data_path: Path, ticket_id: str):
+    state = load_state(data_path)
     ids = state.setdefault('processed_ticket_ids', [])
     if ticket_id not in ids:
         ids.append(ticket_id)
-    save_state(state)
+    save_state(data_path, state)

@@ -21,22 +21,29 @@ def normalize_ticket(row):
     )
 
 
-def log_line(line: str):
+def discover_instances():
+    if not config.INSTANCES_DIR.exists():
+        return []
+    return [path.name for path in sorted(config.INSTANCES_DIR.iterdir()) if path.is_dir()]
+
+
+def log_line(instance_name: str, line: str):
     log_dir = config.BASE_DIR / 'logs'
     log_dir.mkdir(parents=True, exist_ok=True)
-    with (log_dir / 'hubspot-tickets.log').open('a') as fh:
+    with (log_dir / f'hubspot-{instance_name}.log').open('a') as fh:
         fh.write(line.rstrip() + '\n')
     print(line)
 
 
-def process_ticket(ticket, docs, dry_run: bool = True):
+def process_ticket(instance, ticket, docs, dry_run: bool = True):
     hits = simple_search(f"{ticket.subject} {ticket.body_text}", docs)
     decision = classify_ticket(ticket, hits)
     reply = generate_reply(ticket, hits, decision)
     note_result = {'status': 'dry-run'} if dry_run else create_ticket_note(ticket.ticket_id, reply)
     if not dry_run:
-        mark_processed(ticket.ticket_id)
+        mark_processed(instance['data_path'], ticket.ticket_id)
     block = [
+        f"INSTANCE={instance['instance_name']}",
         f"TICKET={ticket.ticket_id}",
         f"SUBJECT={ticket.subject}",
         f"CONFIDENCE={decision.confidence}",
@@ -50,29 +57,49 @@ def process_ticket(ticket, docs, dry_run: bool = True):
         '---',
     ]
     for line in block:
-        log_line(line)
+        log_line(instance['instance_name'], line)
 
 
 
-def run_once(limit: int = 3, dry_run: bool = True):
-    docs = load_kb_documents(config.KB_PATH)
-    rows = get_recent_tickets(limit=limit)
+def process_instance(limit: int = 3, instance_name: str | None = None, dry_run: bool = True):
+    instance = config.load_instance(instance_name)
+    docs = load_kb_documents(instance['kb_path'])
+    rows = get_recent_tickets(
+        limit=limit,
+        pipeline=instance['hubspot_ticket_pipeline'],
+        owner_id=instance['hubspot_owner_id'],
+    )
     processed = 0
+    log_line(instance['instance_name'], f"PIPELINE={instance['hubspot_ticket_pipeline']}")
+    log_line(instance['instance_name'], f"OWNER_ID={instance['hubspot_owner_id']}")
+    log_line(instance['instance_name'], f"KB_PATH={instance['kb_path']}")
+    log_line(instance['instance_name'], f"DATA_PATH={instance['data_path']}")
     for row in rows:
         ticket = normalize_ticket(row)
-        if not ticket.ticket_id or is_processed(ticket.ticket_id):
+        if not ticket.ticket_id or is_processed(instance['data_path'], ticket.ticket_id):
             continue
-        process_ticket(ticket, docs, dry_run=dry_run)
+        process_ticket(instance, ticket, docs, dry_run=dry_run)
         processed += 1
-    log_line(f"PROCESSED={processed}")
+    log_line(instance['instance_name'], f"PROCESSED={processed}")
+    return processed
 
 
-def run_loop(limit: int = 3, dry_run: bool = True, poll_seconds: int = 120):
+def run_once(limit: int = 3, dry_run: bool = True, instance_name: str | None = None, all_instances: bool = False):
+    if all_instances:
+        total = 0
+        for name in discover_instances():
+            total += process_instance(limit=limit, instance_name=name, dry_run=dry_run)
+        print(f"ALL_INSTANCES_PROCESSED={total}")
+        return total
+    return process_instance(limit=limit, instance_name=instance_name, dry_run=dry_run)
+
+
+def run_loop(limit: int = 3, dry_run: bool = True, poll_seconds: int = 120, instance_name: str | None = None, all_instances: bool = False):
     while True:
         try:
-            run_once(limit=limit, dry_run=dry_run)
+            run_once(limit=limit, dry_run=dry_run, instance_name=instance_name, all_instances=all_instances)
         except Exception as exc:
-            log_line(f"LOOP_ERROR={exc}")
+            print(f"LOOP_ERROR={exc}")
         time.sleep(poll_seconds)
 
 
