@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from .hubspot_client import get_recent_tickets, create_ticket_note
-from .kb import load_kb_documents, simple_search
+from .kb import search_kb
 from .policy import classify_ticket
 from .responder import generate_reply
 from .models import TicketMessage
@@ -35,8 +35,8 @@ def log_line(instance_name: str, line: str):
     print(line)
 
 
-def process_ticket(instance, ticket, docs, dry_run: bool = True):
-    hits = simple_search(f"{ticket.subject} {ticket.body_text}", docs)
+def process_ticket(instance, ticket, dry_run: bool = True):
+    hits = search_kb(f"{ticket.subject} {ticket.body_text}", instance['kb_path'])
     decision = classify_ticket(ticket, hits)
     reply = generate_reply(ticket, hits, decision)
     note_result = {'status': 'dry-run'} if dry_run else create_ticket_note(ticket.ticket_id, reply)
@@ -63,7 +63,6 @@ def process_ticket(instance, ticket, docs, dry_run: bool = True):
 
 def process_instance(limit: int = 3, instance_name: str | None = None, dry_run: bool = True):
     instance = config.load_instance(instance_name)
-    docs = load_kb_documents(instance['kb_path'])
     rows = get_recent_tickets(
         limit=limit,
         pipeline=instance['hubspot_ticket_pipeline'],
@@ -75,12 +74,13 @@ def process_instance(limit: int = 3, instance_name: str | None = None, dry_run: 
     log_line(instance['instance_name'], f"OWNER_ID={instance['hubspot_owner_id']}")
     log_line(instance['instance_name'], f"STAGE={instance['hubspot_ticket_stage']}")
     log_line(instance['instance_name'], f"KB_PATH={instance['kb_path']}")
+    log_line(instance['instance_name'], f"KB_BACKEND={config.KB_BACKEND}")
     log_line(instance['instance_name'], f"DATA_PATH={instance['data_path']}")
     for row in rows:
         ticket = normalize_ticket(row)
         if not ticket.ticket_id or is_processed(instance['data_path'], ticket.ticket_id):
             continue
-        process_ticket(instance, ticket, docs, dry_run=dry_run)
+        process_ticket(instance, ticket, dry_run=dry_run)
         processed += 1
     log_line(instance['instance_name'], f"PROCESSED={processed}")
     return processed
