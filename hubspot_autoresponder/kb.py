@@ -45,21 +45,34 @@ def pgvector_search(query: str, limit: int | None = None):
     vector = embed_query(query)
     top_k = limit or config.KB_TOP_K
     vector_sql = '[' + ','.join(str(x) for x in vector) + ']'
+    collection_join = ''
+    collection_where = ''
+    params = [vector_sql, vector_sql]
+    if config.KB_COLLECTION_NAME:
+        collection_join = (
+            f" JOIN {config.KB_COLLECTION_TABLE} c"
+            f" ON e.{config.KB_EMBEDDING_COLLECTION_ID_COLUMN} = c.{config.KB_COLLECTION_ID_COLUMN}"
+        )
+        collection_where = f" WHERE c.{config.KB_COLLECTION_NAME_COLUMN} = %s"
+        params.append(config.KB_COLLECTION_NAME)
     sql = f"""
         SELECT
-            {config.KB_DOCUMENT_ID_COLUMN}::text AS document_id,
-            COALESCE({config.KB_SOURCE_COLUMN}::text, '') AS source,
-            {config.KB_TEXT_COLUMN}::text AS chunk_text,
-            1 - ({config.KB_EMBEDDING_COLUMN} <=> %s::vector) AS score,
-            COALESCE({config.KB_METADATA_COLUMN}::text, '{{}}') AS metadata_text
-        FROM {config.KB_TABLE}
-        ORDER BY {config.KB_EMBEDDING_COLUMN} <=> %s::vector
+            e.{config.KB_DOCUMENT_ID_COLUMN}::text AS document_id,
+            COALESCE(e.{config.KB_SOURCE_COLUMN}::text, '') AS source,
+            e.{config.KB_TEXT_COLUMN}::text AS chunk_text,
+            1 - (e.{config.KB_EMBEDDING_COLUMN} <=> %s::vector) AS score,
+            COALESCE(e.{config.KB_METADATA_COLUMN}::text, '{{}}') AS metadata_text
+        FROM {config.KB_TABLE} e
+        {collection_join}
+        {collection_where}
+        ORDER BY e.{config.KB_EMBEDDING_COLUMN} <=> %s::vector
         LIMIT %s
     """
+    params.append(top_k)
     hits = []
     with psycopg.connect(config.KB_DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute(sql, (vector_sql, vector_sql, top_k))
+            cur.execute(sql, params)
             for document_id, source, chunk_text, score, metadata_text in cur.fetchall():
                 path = source or document_id or 'pgvector'
                 try:

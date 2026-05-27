@@ -139,6 +139,11 @@ Optional column overrides:
 - `KB_EMBEDDING_COLUMN`
 - `KB_METADATA_COLUMN`
 - `KB_SOURCE_COLUMN`
+- `KB_COLLECTION_TABLE`
+- `KB_COLLECTION_ID_COLUMN`
+- `KB_COLLECTION_NAME_COLUMN`
+- `KB_EMBEDDING_COLLECTION_ID_COLUMN`
+- `KB_COLLECTION_NAME`
 - `KB_TOP_K`
 
 Markdown retrieval remains available as a fallback with:
