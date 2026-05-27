@@ -97,3 +97,28 @@ Example runs:
 Each instance writes its own log file:
 - `logs/hubspot-user-a.log`
 - `logs/hubspot-user-b.log`
+
+
+## Owner lookup helper
+List HubSpot owners so you can map email/name to `HUBSPOT_OWNER_ID`:
+```bash
+./.venv/bin/python scripts/list_owners.py
+```
+
+## Instance scaffolder
+Create a new multi-user instance folder automatically:
+```bash
+./.venv/bin/python scripts/create_instance.py user-c --owner-id 123456 --pipeline support-pipeline --stage new
+```
+
+## Stage filtering
+Instances can now also filter by ticket stage using `HUBSPOT_TICKET_STAGE`.
+
+Example `.env.example` for an instance:
+```bash
+HUBSPOT_OWNER_ID=123456
+HUBSPOT_TICKET_PIPELINE=support-pipeline
+HUBSPOT_TICKET_STAGE=new
+KB_PATH=./instances/user-c/knowledge_base
+DATA_PATH=./instances/user-c/data
+```

@@ -68,10 +68,12 @@ def process_instance(limit: int = 3, instance_name: str | None = None, dry_run: 
         limit=limit,
         pipeline=instance['hubspot_ticket_pipeline'],
         owner_id=instance['hubspot_owner_id'],
+        stage=instance['hubspot_ticket_stage'],
     )
     processed = 0
     log_line(instance['instance_name'], f"PIPELINE={instance['hubspot_ticket_pipeline']}")
     log_line(instance['instance_name'], f"OWNER_ID={instance['hubspot_owner_id']}")
+    log_line(instance['instance_name'], f"STAGE={instance['hubspot_ticket_stage']}")
     log_line(instance['instance_name'], f"KB_PATH={instance['kb_path']}")
     log_line(instance['instance_name'], f"DATA_PATH={instance['data_path']}")
     for row in rows:

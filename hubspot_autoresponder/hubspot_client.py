@@ -10,11 +10,11 @@ def _headers():
     }
 
 
-def get_recent_tickets(limit: int = 10, pipeline: str = '', owner_id: str = ''):
+def get_recent_tickets(limit: int = 10, pipeline: str = '', owner_id: str = '', stage: str = ''):
     url = f"{config.HUBSPOT_BASE_URL}/crm/v3/objects/tickets"
     params = {
         'limit': limit,
-        'properties': 'subject,content,hs_pipeline,hubspot_owner_id',
+        'properties': 'subject,content,hs_pipeline,hs_pipeline_stage,hubspot_owner_id',
     }
     resp = requests.get(url, headers=_headers(), params=params, timeout=30)
     resp.raise_for_status()
@@ -26,8 +26,17 @@ def get_recent_tickets(limit: int = 10, pipeline: str = '', owner_id: str = ''):
             continue
         if owner_id and props.get('hubspot_owner_id', '') != owner_id:
             continue
+        if stage and props.get('hs_pipeline_stage', '') != stage:
+            continue
         filtered.append(row)
     return filtered
+
+
+def get_owners():
+    url = f"{config.HUBSPOT_BASE_URL}/crm/v3/owners/"
+    resp = requests.get(url, headers=_headers(), timeout=30)
+    resp.raise_for_status()
+    return resp.json().get('results', [])
 
 
 def create_note(body_text: str):

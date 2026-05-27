@@ -12,6 +12,7 @@ load_dotenv()
 HUBSPOT_ACCESS_TOKEN = os.getenv('HUBSPOT_ACCESS_TOKEN', '')
 HUBSPOT_BASE_URL = os.getenv('HUBSPOT_BASE_URL', 'https://api.hubapi.com').strip()
 HUBSPOT_TICKET_PIPELINE = os.getenv('HUBSPOT_TICKET_PIPELINE', '').strip()
+HUBSPOT_TICKET_STAGE = os.getenv('HUBSPOT_TICKET_STAGE', '').strip()
 HUBSPOT_OWNER_ID = os.getenv('HUBSPOT_OWNER_ID', '').strip()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 LLM_BASE_URL = os.getenv('LLM_BASE_URL', '').strip()
@@ -39,5 +40,6 @@ def load_instance(instance_name: str | None = None):
         'kb_path': kb_path,
         'data_path': data_path,
         'hubspot_ticket_pipeline': os.getenv('HUBSPOT_TICKET_PIPELINE', HUBSPOT_TICKET_PIPELINE).strip(),
+        'hubspot_ticket_stage': os.getenv('HUBSPOT_TICKET_STAGE', HUBSPOT_TICKET_STAGE).strip(),
         'hubspot_owner_id': os.getenv('HUBSPOT_OWNER_ID', HUBSPOT_OWNER_ID).strip(),
     }
