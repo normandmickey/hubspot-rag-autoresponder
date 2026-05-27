@@ -155,3 +155,23 @@ KB_BACKEND=markdown
 ## Workflow + runbook docs
 - Workflow diagram and step-by-step flow: `docs/workflow.md`
 - Deployment / usage runbook: `docs/runbook.md`
+
+
+## Separate LLM and embedding providers
+This repo supports using different providers for generation and embedding lookup.
+
+Example split setup:
+```bash
+LLM_API_KEY=local
+LLM_BASE_URL=https://your-local-llm/v1
+LLM_MODEL=your-local-chat-model
+
+EMBED_API_KEY=YOUR_OPENAI_API_KEY
+EMBED_BASE_URL=
+KB_QUERY_EMBED_MODEL=text-embedding-3-large
+```
+
+Notes:
+- `LLM_*` is used for reply generation
+- `EMBED_*` is used for KB query embeddings
+- `OPENAI_API_KEY` can still act as a fallback if you leave the split keys blank

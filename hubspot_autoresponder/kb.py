@@ -30,11 +30,15 @@ def simple_search(query: str, docs, limit: int = 5):
 def embed_query(query: str):
     if not config.KB_QUERY_EMBED_MODEL:
         raise RuntimeError('KB_QUERY_EMBED_MODEL must be set for pgvector retrieval')
-    if not config.LLM_BASE_URL:
-        raise RuntimeError('LLM_BASE_URL must be set for pgvector retrieval')
     verify = config.LLM_CA_BUNDLE or config.LLM_VERIFY_SSL
     http_client = httpx.Client(verify=verify, timeout=120.0)
-    client = OpenAI(api_key=config.OPENAI_API_KEY or 'local', base_url=config.LLM_BASE_URL, http_client=http_client)
+    client_kwargs = {
+        'api_key': config.EMBED_API_KEY or config.OPENAI_API_KEY,
+        'http_client': http_client,
+    }
+    if config.EMBED_BASE_URL:
+        client_kwargs['base_url'] = config.EMBED_BASE_URL
+    client = OpenAI(**client_kwargs)
     resp = client.embeddings.create(model=config.KB_QUERY_EMBED_MODEL, input=query)
     return resp.data[0].embedding
 

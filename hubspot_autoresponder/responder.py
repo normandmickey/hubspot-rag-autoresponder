@@ -31,7 +31,7 @@ def generate_reply(message, kb_docs, decision):
     verify = config.LLM_CA_BUNDLE or config.LLM_VERIFY_SSL
     http_client = httpx.Client(verify=verify, timeout=120.0)
     client = OpenAI(
-        api_key=config.OPENAI_API_KEY or 'local',
+        api_key=config.LLM_API_KEY or 'local',
         base_url=config.LLM_BASE_URL,
         http_client=http_client,
     )
