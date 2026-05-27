@@ -51,14 +51,14 @@ def pgvector_search(query: str, limit: int | None = None):
     vector_sql = '[' + ','.join(str(x) for x in vector) + ']'
     collection_join = ''
     collection_where = ''
-    params = [vector_sql, vector_sql]
+    where_params = []
     if config.KB_COLLECTION_NAME:
         collection_join = (
             f" JOIN {config.KB_COLLECTION_TABLE} c"
             f" ON e.{config.KB_EMBEDDING_COLLECTION_ID_COLUMN} = c.{config.KB_COLLECTION_ID_COLUMN}"
         )
         collection_where = f" WHERE c.{config.KB_COLLECTION_NAME_COLUMN} = %s"
-        params.append(config.KB_COLLECTION_NAME)
+        where_params.append(config.KB_COLLECTION_NAME)
     sql = f"""
         SELECT
             e.{config.KB_DOCUMENT_ID_COLUMN}::text AS document_id,
@@ -72,7 +72,7 @@ def pgvector_search(query: str, limit: int | None = None):
         ORDER BY e.{config.KB_EMBEDDING_COLUMN} <=> %s::vector
         LIMIT %s
     """
-    params.append(top_k)
+    params = where_params + [vector_sql, top_k]
     hits = []
     with psycopg.connect(config.KB_DATABASE_URL) as conn:
         with conn.cursor() as cur:
