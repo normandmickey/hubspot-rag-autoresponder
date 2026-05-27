@@ -72,7 +72,7 @@ def pgvector_search(query: str, limit: int | None = None):
         ORDER BY e.{config.KB_EMBEDDING_COLUMN} <=> %s::vector
         LIMIT %s
     """
-    params = where_params + [vector_sql, top_k]
+    params = [vector_sql] + where_params + [vector_sql, top_k]
     hits = []
     with psycopg.connect(config.KB_DATABASE_URL) as conn:
         with conn.cursor() as cur:
