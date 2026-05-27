@@ -7,7 +7,7 @@ Standalone HubSpot ticket autoresponder with knowledge-base retrieval.
 - load markdown/text knowledge-base files
 - retrieve relevant KB snippets
 - generate a grounded reply draft
-- write recommendations/logs back to HubSpot later
+- attach drafted notes back to HubSpot tickets when dry-run is off
 - support local no-HubSpot reply testing
 
 ## Initial focus
@@ -62,4 +62,18 @@ LLM_VERIFY_SSL=false
 or
 ```bash
 LLM_CA_BUNDLE=/path/to/your-ca.pem
+```
+
+
+## HubSpot note writeback
+When `--dry-run` is off, the runner now creates a HubSpot note and associates it with the ticket.
+
+Example:
+```bash
+./.venv/bin/python scripts/run_tickets.py --limit 3
+```
+
+Dry-run still avoids touching HubSpot writeback:
+```bash
+./.venv/bin/python scripts/run_tickets.py --limit 3 --dry-run
 ```

@@ -43,6 +43,7 @@ def process_ticket(ticket, docs, dry_run: bool = True):
         f"REASONS={','.join(decision.reasons)}",
         f"KB_HITS={len(hits)}",
         f"WRITEBACK_STATUS={note_result.get('status', 'unknown')}",
+        f"NOTE_ID={note_result.get('note_id', '')}",
         'REPLY_PREVIEW_START',
         reply,
         'REPLY_PREVIEW_END',
