@@ -145,3 +145,8 @@ Markdown retrieval remains available as a fallback with:
 ```bash
 KB_BACKEND=markdown
 ```
+
+
+## Workflow + runbook docs
+- Workflow diagram and step-by-step flow: `docs/workflow.md`
+- Deployment / usage runbook: `docs/runbook.md`
