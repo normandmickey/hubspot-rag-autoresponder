@@ -2,6 +2,8 @@ import httpx
 from openai import OpenAI
 from . import config
 
+AI_DISCLOSURE = "This response was generated with the help of AI tools based on the knowledge base."
+
 
 def build_reply_prompt(message, kb_docs, decision):
     kb_blob = '\n\n'.join(f"Source: {doc.path}\n{doc.text[:2000]}" for doc in kb_docs)
@@ -45,8 +47,20 @@ def fallback_reply(message):
     return (
         f"{greeting}\n\n"
         "We’re unable to answer that question based on the knowledge base.\n\n"
+        f"{AI_DISCLOSURE}\n\n"
         "Best,\nSupport"
     )
+
+
+def append_ai_disclosure(reply_text: str):
+    reply_text = (reply_text or '').strip()
+    if not reply_text:
+        return AI_DISCLOSURE
+    if AI_DISCLOSURE in reply_text:
+        return reply_text
+    if "\n\nBest,\nSupport" in reply_text:
+        return reply_text.replace("\n\nBest,\nSupport", f"\n\n{AI_DISCLOSURE}\n\nBest,\nSupport")
+    return f"{reply_text}\n\n{AI_DISCLOSURE}"
 
 
 def generate_reply(message, kb_docs, decision):
@@ -68,7 +82,7 @@ def generate_reply(message, kb_docs, decision):
         temperature=config.LLM_TEMPERATURE,
         max_output_tokens=config.LLM_MAX_TOKENS,
     )
-    return (resp.output_text or '').strip()
+    return append_ai_disclosure((resp.output_text or '').strip())
 
 
 def llm_connection_help_text():
