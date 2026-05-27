@@ -28,7 +28,8 @@ def main():
         requester_name=payload.get('requester_name', ''),
         body_text=payload.get('body_text', ''),
     )
-    hits = search_kb(f"{ticket.subject} {ticket.body_text}", config.KB_PATH)
+    instance = config.load_instance(None)
+    hits = search_kb(f"{ticket.subject} {ticket.body_text}", instance['kb_path'])
     decision = classify_ticket(ticket, hits)
     try:
         reply = generate_reply(ticket, hits, decision)
@@ -36,6 +37,7 @@ def main():
         print(f'LLM_ERROR={exc}')
         print(llm_connection_help_text())
         raise
+    print(f"KB_PATH={instance['kb_path']}")
     print(f"TICKET={ticket.ticket_id}")
     print(f"SUBJECT={ticket.subject}")
     print(f"CONFIDENCE={decision.confidence}")
